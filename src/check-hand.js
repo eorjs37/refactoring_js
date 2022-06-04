@@ -1,4 +1,5 @@
-
+const assert = require('assert');
+assert(checkHand(['2-H','3-C','4-D','5-H','2-C'])  === 'pair')
 checkStraightFlush = function(){
     return false;
 }
@@ -114,5 +115,7 @@ var checkHand = function(hand){
     }
 }
 //debugger;
-console.log('Value of checkHand is ' + checkHand(['2-H','3-C','4-D','5-H','2-C']));
-console.log('Value of checkHand is ' + checkHand(['3-H','3-C','3-D','5-H','2-H']));
+
+// assert.equal(checkHand(['3-H','3-C','3-D','5-H','2-H']),'three of a kind');
+// console.log('Value of checkHand is ' + checkHand(['2-H','3-C','4-D','5-H','2-C']));
+// console.log('Value of checkHand is ' + checkHand(['3-H','3-C','3-D','5-H','2-H']));
