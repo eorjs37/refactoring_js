@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/eorjs37/refactoring_js#readme",
   "dependencies": {
+    "deep-equal": "^2.0.5",
     "wish": "^1.0.1"
   }
 }
