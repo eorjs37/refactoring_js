@@ -70,9 +70,9 @@ function setChrodCountInLables(){
 
 function setProbabilityOfChordsInLabels(){
     probabilityOfChordsInLabels = chordCountsInLabels;
-    Object.keys(probabilityOfChordsInLabels).forEach(function(i){
-        Object.keys(probabilityOfChordsInLabels[i]).forEach(function(j){
-            probabilityOfChordsInLabels[i][j] = probabilityOfChordsInLabels[i][j] * 1.0 / songs.length;
+    Object.keys(probabilityOfChordsInLabels).forEach(function(difficulty){
+        Object.keys(probabilityOfChordsInLabels[difficulty]).forEach(function(chrod){
+            probabilityOfChordsInLabels[difficulty][chrod] = probabilityOfChordsInLabels[difficulty][chrod] * 1.0 / songs.length;
         })
     })
 }
