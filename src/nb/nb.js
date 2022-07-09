@@ -94,10 +94,10 @@ setChrodCountInLables();
 setProbabilityOfChordsInLabels();
 
 function classify(chrods){
-    var ttal = labelProbabilities;
-    console.log(ttal);
+    var total = labelProbabilities;
+    console.log(total);
     var classified = {};
-    Object.keys(ttal).forEach(function(obj){
+    Object.keys(total).forEach(function(obj){
         var first = labelProbabilities[obj] + 1.01;
         chrods.forEach(function(chord){
             var probabilityOfChordInLabel =
