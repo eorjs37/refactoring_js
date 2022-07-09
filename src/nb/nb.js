@@ -110,7 +110,7 @@ function classify(chrods){
                 first = first * (probabilityOfChordInLabel + 1.01);
             }
         });
-        classified[obj] = first;
+        classified[difficulty] = first;
     });
 
     console.log(classified);
