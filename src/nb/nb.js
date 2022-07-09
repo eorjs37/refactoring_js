@@ -17,6 +17,10 @@ var labelProbabilities = [];
 var chordCountsInLabels = {};
 var probabilityOfChordsInLabels = {};
 
+var easy = 'easy';
+var medium = 'medium';
+var hard = 'hard';
+
 function train(chrods, label){
     songs.push([label,chrods]);
 
@@ -56,7 +60,7 @@ function setChrodCountInLables(){
 
         song[1].forEach(function(chrod){
             if(chordCountsInLabels[song[0]][chrod] > 0){
-                chordCountsInLabels[song[0]][chrod] = chordCountsInLabels[song[0]][chrod] +1;
+                chordCountsInLabels[song[0]][chrod] += 1;
             }
             else{
                 chordCountsInLabels[song[0]][chrod] = 1;
@@ -69,37 +73,38 @@ function setProbabilityOfChordsInLabels(){
     probabilityOfChordsInLabels = chordCountsInLabels;
     Object.keys(probabilityOfChordsInLabels).forEach(function(difficulty){
         Object.keys(probabilityOfChordsInLabels[difficulty]).forEach(function(chrod){
-            probabilityOfChordsInLabels[difficulty][chrod] = probabilityOfChordsInLabels[difficulty][chrod]  / songs.length;
+            probabilityOfChordsInLabels[difficulty][chrod] /= songs.length; 
         })
     })
 }
 
-train(imagine,'easy');
-train(songWhereOverTheRainbow,'easy');
-train(tooManyCooks,'easy');
+train(imagine,easy);
+train(songWhereOverTheRainbow,easy);
+train(tooManyCooks,easy);
 
-train(iWillFoolowYouIntoTheDark,'medium');
-train(babyOneMoreTime,'medium');
-train(creep,'medium');
+train(iWillFoolowYouIntoTheDark,medium);
+train(babyOneMoreTime,medium);
+train(creep,medium);
 
-train(paperBag,'hard');
-train(toxic,'hard');
-train(bulletproof,'hard');
+train(paperBag,hard);
+train(toxic,hard);
+train(bulletproof,hard);
 
 setLabelProbabilities();
 setChrodCountInLables();
 setProbabilityOfChordsInLabels();
 
 function classify(chrods){
+    var smoothing = 1.01;
     var classified = {};
     Object.keys(labelProbabilities).forEach(function(difficulty){
-        var first = labelProbabilities[difficulty] + 1.01;
+        var first = labelProbabilities[difficulty] + smoothing;
         chrods.forEach(function(chord){
             var probabilityOfChordInLabel =
             probabilityOfChordsInLabels[difficulty][chord];
 
             if(probabilityOfChordInLabel){
-                first = first * (probabilityOfChordInLabel + 1.01);
+                first = first * (probabilityOfChordInLabel + smoothing);
             }
         });
         classified[difficulty] = first;
