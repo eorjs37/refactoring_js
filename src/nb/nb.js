@@ -41,14 +41,9 @@ function train(chrods, label){
 }
 
 
-function getNumberOfSongs(){
-    return songs.length;
-}
-
 function setLabelProbabilities(){
     Object.keys(labelCounts).forEach(function(label){
-        var numberOfSongs = getNumberOfSongs();
-        labelProbabilities[label] = labelCounts[label] / numberOfSongs;
+        labelProbabilities[label] = labelCounts[label] / songs.length;
     })
 }
 
