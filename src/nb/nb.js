@@ -18,9 +18,9 @@ bulletproof = ['d#m','g#','b','f#','g#m','c#'];
 var songs = [];
 var allChords = new Set();
 var labelCounts = new Map();
-var labelProbabilities = {};
-var chordCountsInLabels = {};
-var probabilityOfChordsInLabels = {};
+var labelProbabilities = new Map();
+var chordCountsInLabels = new Map();
+var probabilityOfChordsInLabels = new Map();
 
 var easy = 'easy';
 var medium = 'medium';
@@ -43,22 +43,22 @@ function train(chrods, label){
 
 function setLabelProbabilities(){
     labelCounts.forEach(function(_count,label){
-        labelProbabilities[label] = labelCounts.get(label) / songs.length;
+        labelProbabilities.set(label, labelCounts.get(label) / songs.length);
     });
 }
 
 function setChrodCountInLables(){
     songs.forEach(function(song){
-        if(chordCountsInLabels[song.label] === undefined){
-            chordCountsInLabels[song.label] = {};
+        if(chordCountsInLabels.get(song.label) === undefined){
+            chordCountsInLabels.set(song.label,{})
         }
 
         song.chrods.forEach(function(chrod){
-            if(chordCountsInLabels[song.label][chrod] > 0){
-                chordCountsInLabels[song.label][chrod] += 1;
+            if(chordCountsInLabels.get(song.label)[chrod] > 0){
+                chordCountsInLabels.get(song.label)[chrod] += 1;
             }
             else{
-                chordCountsInLabels[song.label][chrod] = 1;
+                chordCountsInLabels.get(song.label)[chrod] = 1;
             }
         })
     })
@@ -66,11 +66,12 @@ function setChrodCountInLables(){
 
 function setProbabilityOfChordsInLabels(){
     probabilityOfChordsInLabels = chordCountsInLabels;
-    Object.keys(probabilityOfChordsInLabels).forEach(function(difficulty){
-        Object.keys(probabilityOfChordsInLabels[difficulty]).forEach(function(chrod){
-            probabilityOfChordsInLabels[difficulty][chrod] /= songs.length; 
+    
+    probabilityOfChordsInLabels.forEach(function(_chords,difficulty){
+        Object.keys(probabilityOfChordsInLabels.get(difficulty)).forEach(function(chrod){
+            probabilityOfChordsInLabels.get(difficulty)[chrod] /= songs.length;
         })
-    })
+    });
 }
 
 train(imagine,easy);
@@ -92,11 +93,11 @@ setProbabilityOfChordsInLabels();
 function classify(chrods){
     var smoothing = 1.01;
     var classified = new Map();
-    Object.keys(labelProbabilities).forEach(function(difficulty){
-        var first = labelProbabilities[difficulty] + smoothing;
+    labelProbabilities.forEach(function(_probabilities, difficulty){
+        var first = labelProbabilities.get(difficulty) + smoothing;
         chrods.forEach(function(chord){
             var probabilityOfChordInLabel =
-            probabilityOfChordsInLabels[difficulty][chord];
+            probabilityOfChordsInLabels.get(difficulty)[chord];
 
             if(probabilityOfChordInLabel){
                 first = first * (probabilityOfChordInLabel + smoothing);
