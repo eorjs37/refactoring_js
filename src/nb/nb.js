@@ -1,3 +1,9 @@
+function fileName(){
+    var theError = new Error('i am');
+    return /(\w+\.js)/.exec(theError.stack)[1];
+}
+
+console.log(`Welcome to ${fileName()}`);
 //노래 관련 코드들
 imagine = ['c','cmaj7','f','am','dm','g','e7'];
 songWhereOverTheRainbow = ['c','em','f','g','am'];
@@ -10,10 +16,9 @@ toxic = ['cm','eb','g','cdim','eb7','d7','db7','ab','gmaj7','g7'];
 bulletproof = ['d#m','g#','b','f#','g#m','c#'];
 
 var songs = [];
-var labels = [];
-var allChords = [];
-var labelCounts = [];
-var labelProbabilities = [];
+var allChords = new Set();
+var labelCounts = new Map();
+var labelProbabilities = {};
 var chordCountsInLabels = {};
 var probabilityOfChordsInLabels = {};
 
@@ -22,43 +27,38 @@ var medium = 'medium';
 var hard = 'hard';
 
 function train(chrods, label){
-    songs.push([label,chrods]);
+    songs.push({label:label, chrods:chrods});
 
-    labels.push(label);
 
-    for(var  index = 0 ; index < chrods.length ; index++){
-        if(!allChords.includes(chrods[index])){
-            allChords.push(chrods[index]);
-        }
-    }
+    chrods.forEach(chrod => allChords.add(chrod));//
 
-    if(Object.keys(labelCounts).includes(label)){
-        labelCounts[label] = labelCounts[label] + 1;
+    if(Array.from(labelCounts.keys()).includes(label)){
+        labelCounts.set(label, labelCounts.get(label)+1)
     }
     else{
-        labelCounts[label] = 1;
+        labelCounts.set(label,1);
     }
 }
 
 
 function setLabelProbabilities(){
-    Object.keys(labelCounts).forEach(function(label){
-        labelProbabilities[label] = labelCounts[label] / songs.length;
-    })
+    labelCounts.forEach(function(_count,label){
+        labelProbabilities[label] = labelCounts.get(label) / songs.length;
+    });
 }
 
 function setChrodCountInLables(){
     songs.forEach(function(song){
-        if(chordCountsInLabels[song[0]] === undefined){
-            chordCountsInLabels[song[0]] = {};
+        if(chordCountsInLabels[song.label] === undefined){
+            chordCountsInLabels[song.label] = {};
         }
 
-        song[1].forEach(function(chrod){
-            if(chordCountsInLabels[song[0]][chrod] > 0){
-                chordCountsInLabels[song[0]][chrod] += 1;
+        song.chrods.forEach(function(chrod){
+            if(chordCountsInLabels[song.label][chrod] > 0){
+                chordCountsInLabels[song.label][chrod] += 1;
             }
             else{
-                chordCountsInLabels[song[0]][chrod] = 1;
+                chordCountsInLabels[song.label][chrod] = 1;
             }
         })
     })
@@ -91,7 +91,7 @@ setProbabilityOfChordsInLabels();
 
 function classify(chrods){
     var smoothing = 1.01;
-    var classified = {};
+    var classified = new Map();
     Object.keys(labelProbabilities).forEach(function(difficulty){
         var first = labelProbabilities[difficulty] + smoothing;
         chrods.forEach(function(chord){
@@ -102,7 +102,7 @@ function classify(chrods){
                 first = first * (probabilityOfChordInLabel + smoothing);
             }
         });
-        classified[difficulty] = first;
+        classified.set(difficulty,first);
     });
 
     console.log(classified);
