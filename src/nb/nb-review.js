@@ -1,3 +1,10 @@
+function fileName() {
+  var theError = new Error("here i am");
+  return theError.stack.match(/\/(\w+\.js)\:/)[1];
+}
+
+console.log(`Welcome to ${fileName()}`);
+
 //노래 관련코드들
 imagine = ["c", "cmaj7", "f", "am", "dm", "g", "e7"];
 someWhereOverTheRainbow = ["c", "em", "f", "g", "am"];
@@ -27,52 +34,47 @@ bulletproof = ["d#m", "g#", "b", "f#", "g#m", "c#"];
 blankSong = [];
 
 var songs = [];
-var labels = [];
-var allChords = [];
-var labelCounts = [];
-var labelProbabilities = [];
-var chordCountsInLabels = {};
-var probabilityOfChordsInLabels = {};
+
+var allChords = new Set();
+var labelCounts = new Map();
+var labelProbabilities = new Map();
+var chordCountsInLabels = new Map();
+var probabilityOfChordsInLabels = new Map();
 
 var easy = "easy";
 var medium = "medium";
 var hard = "hard";
 
 function train(chords, label) {
-  songs.push([label, chords]);
+  var labels = [];
+  songs.push({ label, chords });
   labels.push(label);
-  for (var index = 0; index < chords.length; index++) {
-    if (!allChords.includes(chords[index])) {
-      allChords.push(chords[index]);
-    }
-  }
 
-  if (Object.keys(labelCounts).includes(label)) {
-    labelCounts[label] = labelCounts[label] + 1;
+  chords.forEach((chord) => allChords.add(chord));
+
+  if (Array.from(labelCounts.keys()).includes(label)) {
+    labelCounts.set(label, labelCounts.get(label) + 1);
   } else {
-    labelCounts[label] = 1;
+    labelCounts.set(label, 1);
   }
 }
 
-function getNumberOfSongs() {
-  return songs.length;
-}
 function setLabelProbabilities() {
-  Object.keys(labelCounts).forEach(function (label) {
-    labelProbabilities[label] = labelCounts[label] / songs.length;
+  labelCounts.forEach(function (_count, label) {
+    labelProbabilities.set(label, labelCounts.get(label) / songs.length);
   });
 }
 function setChrodCountsInLabels() {
   songs.forEach(function (song) {
-    if (chordCountsInLabels[song[0]] === undefined) {
-      chordCountsInLabels[song[0]] = {};
+    if (chordCountsInLabels.get(song.label) === undefined) {
+      chordCountsInLabels.set(song.label, {});
     }
 
-    song[1].forEach(function (chord) {
-      if (chordCountsInLabels[song[0]][chord] > 0) {
-        chordCountsInLabels[song[0]][chord] += 1;
+    song.chords.forEach(function (chord) {
+      if (chordCountsInLabels.get(song.label)[chord] > 0) {
+        chordCountsInLabels.get(song.label)[chord] += 1;
       } else {
-        chordCountsInLabels[song[0]][chord] = 1;
+        chordCountsInLabels.get(song.label)[chord] = 1;
       }
     });
   });
@@ -80,11 +82,12 @@ function setChrodCountsInLabels() {
 
 function setProbabilityOfChordsInLabels() {
   probabilityOfChordsInLabels = chordCountsInLabels;
-  Object.keys(probabilityOfChordsInLabels).forEach(function (difficulty) {
-    Object.keys(probabilityOfChordsInLabels[difficulty]).forEach(function (
+
+  probabilityOfChordsInLabels.forEach(function (_chords, difficulty) {
+    Object.keys(probabilityOfChordsInLabels.get(difficulty)).forEach(function (
       chord
     ) {
-      probabilityOfChordsInLabels[difficulty][chord] /= songs.length;
+      probabilityOfChordsInLabels.get(difficulty)[chord] /= songs.length;
     });
   });
 }
@@ -107,19 +110,20 @@ setProbabilityOfChordsInLabels();
 
 function classify(chords) {
   var something = 1.01;
-  var classififed = {};
-  Object.keys(labelProbabilities).forEach(function (difficulty) {
-    var first = labelProbabilities[difficulty] + something;
+  var classififed = new Map();
+
+  labelProbabilities.forEach(function (_probabilities, difficulty) {
+    var first = labelProbabilities.get(difficulty) + something;
     chords.forEach(function (chord) {
       var probabilityOfChordInLabel =
-        probabilityOfChordsInLabels[difficulty][chord];
+        probabilityOfChordsInLabels.get(difficulty)[chord];
       if (probabilityOfChordInLabel !== undefined) {
         first *= probabilityOfChordInLabel + something;
       }
     });
-
-    classififed[difficulty] = first;
+    classififed.set(difficulty, first);
   });
+
   console.log(classififed);
 }
 
