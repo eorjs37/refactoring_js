@@ -1,9 +1,11 @@
 function fileName() {
   var theError = new Error("here i am");
-  return theError.stack.match(/\/(\w+\.js)\:/)[1];
+  return /(\w+\.js)/.exec(theError.stack)[1];
 }
 
-console.log(`Welcome to ${fileName()}`);
+function welcomeMessage() {
+  return `Welcome to ${fileName()}`;
+}
 
 //노래 관련코드들
 imagine = ["c", "cmaj7", "f", "am", "dm", "g", "e7"];
@@ -13,21 +15,7 @@ iWillFollowYouIntoTheDark = ["f", "dm", "bb", "c", "a", "bbm"];
 babyOneMoreTime = ["cm", "g", "bb", "eb", "fm", "ab"];
 creep = ["g", "gsus4", "b", "bsus4", "c", "cmsus4", "cm6"];
 army = ["ab", "ebm7", "dbadd9", "fm7", "bbm", "abmaj7", "ebm"];
-paperBag = [
-  "bm7",
-  "e",
-  "c",
-  "g",
-  "b7",
-  "f",
-  "em",
-  "a",
-  "cmaj7",
-  "em7",
-  "a7",
-  "f7",
-  "b",
-];
+paperBag = ["bm7", "e", "c", "g", "b7", "f", "em", "a", "cmaj7", "em7", "a7", "f7", "b"];
 
 toxic = ["cm", "eb", "g", "cdim", "eb7", "d", "db7", "ab", "gmaj7", "g7"];
 bulletproof = ["d#m", "g#", "b", "f#", "g#m", "c#"];
@@ -84,9 +72,7 @@ function setProbabilityOfChordsInLabels() {
   probabilityOfChordsInLabels = chordCountsInLabels;
 
   probabilityOfChordsInLabels.forEach(function (_chords, difficulty) {
-    Object.keys(probabilityOfChordsInLabels.get(difficulty)).forEach(function (
-      chord
-    ) {
+    Object.keys(probabilityOfChordsInLabels.get(difficulty)).forEach(function (chord) {
       probabilityOfChordsInLabels.get(difficulty)[chord] /= songs.length;
     });
   });
@@ -115,8 +101,7 @@ function classify(chords) {
   labelProbabilities.forEach(function (_probabilities, difficulty) {
     var first = labelProbabilities.get(difficulty) + something;
     chords.forEach(function (chord) {
-      var probabilityOfChordInLabel =
-        probabilityOfChordsInLabels.get(difficulty)[chord];
+      var probabilityOfChordInLabel = probabilityOfChordsInLabels.get(difficulty)[chord];
       if (probabilityOfChordInLabel !== undefined) {
         first *= probabilityOfChordInLabel + something;
       }
@@ -124,8 +109,33 @@ function classify(chords) {
     classififed.set(difficulty, first);
   });
 
-  console.log(classififed);
+  return classififed;
 }
 
 classify(["d", "g", "e", "dm"]);
 classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
+
+var wish = require("wish");
+
+describe("the file", () => {
+  it("works", () => {
+    wish(true);
+  });
+
+  it("classifies", () => {
+    var classified = classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
+    wish(classified.get("easy") === 1.3433333333333333);
+    wish(classified.get("medium") === 1.5060259259259259);
+    wish(classified.get("hard") === 1.8929091119661638);
+  });
+
+  it("sets welcome message", () => {
+    wish(welcomeMessage() === "Welcome to review.js");
+  });
+
+  it("label probabilities", () => {
+    wish(labelProbabilities.get("easy") === 0.3333333333333333);
+    wish(labelProbabilities.get("medium") === 0.3333333333333333);
+    wish(labelProbabilities.get("hard") === 0.3333333333333333);
+  });
+});
