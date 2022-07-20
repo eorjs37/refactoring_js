@@ -7,101 +7,114 @@ function welcomeMessage() {
   return `Welcome to ${fileName()}`;
 }
 
-//노래 관련코드들
-imagine = ["c", "cmaj7", "f", "am", "dm", "g", "e7"];
-someWhereOverTheRainbow = ["c", "em", "f", "g", "am"];
-tooManyCooks = ["c", "g", "f"];
-iWillFollowYouIntoTheDark = ["f", "dm", "bb", "c", "a", "bbm"];
-babyOneMoreTime = ["cm", "g", "bb", "eb", "fm", "ab"];
-creep = ["g", "gsus4", "b", "bsus4", "c", "cmsus4", "cm6"];
-army = ["ab", "ebm7", "dbadd9", "fm7", "bbm", "abmaj7", "ebm"];
-paperBag = ["bm7", "e", "c", "g", "b7", "f", "em", "a", "cmaj7", "em7", "a7", "f7", "b"];
+var classifier = {
+  songs: [],
+  allChords: new Set(),
+  labelCounts: new Map(),
+  labelProbabilities: new Map(),
+  chordCountsInLabels: new Map(),
+  probabilityOfChordsInLabels: new Map(),
+};
 
-toxic = ["cm", "eb", "g", "cdim", "eb7", "d", "db7", "ab", "gmaj7", "g7"];
-bulletproof = ["d#m", "g#", "b", "f#", "g#m", "c#"];
-blankSong = [];
+function setDifficulites() {
+  easy = "easy";
+  medium = "medium";
+  hard = "hard";
+}
 
-var songs = [];
+function setSongs() {
+  imagine = ["c", "cmaj7", "f", "am", "dm", "g", "e7"];
+  someWhereOverTheRainbow = ["c", "em", "f", "g", "am"];
+  tooManyCooks = ["c", "g", "f"];
+  iWillFollowYouIntoTheDark = ["f", "dm", "bb", "c", "a", "bbm"];
+  babyOneMoreTime = ["cm", "g", "bb", "eb", "fm", "ab"];
+  creep = ["g", "gsus4", "b", "bsus4", "c", "cmsus4", "cm6"];
+  army = ["ab", "ebm7", "dbadd9", "fm7", "bbm", "abmaj7", "ebm"];
+  paperBag = ["bm7", "e", "c", "g", "b7", "f", "em", "a", "cmaj7", "em7", "a7", "f7", "b"];
 
-var allChords = new Set();
-var labelCounts = new Map();
-var labelProbabilities = new Map();
-var chordCountsInLabels = new Map();
-var probabilityOfChordsInLabels = new Map();
-
-var easy = "easy";
-var medium = "medium";
-var hard = "hard";
+  toxic = ["cm", "eb", "g", "cdim", "eb7", "d", "db7", "ab", "gmaj7", "g7"];
+  bulletproof = ["d#m", "g#", "b", "f#", "g#m", "c#"];
+  blankSong = [];
+}
 
 function train(chords, label) {
   var labels = [];
-  songs.push({ label, chords });
+  classifier.songs.push({ label, chords });
   labels.push(label);
 
-  chords.forEach((chord) => allChords.add(chord));
+  chords.forEach((chord) => classifier.allChords.add(chord));
 
-  if (Array.from(labelCounts.keys()).includes(label)) {
-    labelCounts.set(label, labelCounts.get(label) + 1);
+  if (Array.from(classifier.labelCounts.keys()).includes(label)) {
+    classifier.labelCounts.set(label, classifier.labelCounts.get(label) + 1);
   } else {
-    labelCounts.set(label, 1);
+    classifier.labelCounts.set(label, 1);
   }
 }
 
 function setLabelProbabilities() {
-  labelCounts.forEach(function (_count, label) {
-    labelProbabilities.set(label, labelCounts.get(label) / songs.length);
+  classifier.labelCounts.forEach(function (_count, label) {
+    classifier.labelProbabilities.set(label, classifier.labelCounts.get(label) / classifier.songs.length);
   });
 }
 function setChrodCountsInLabels() {
-  songs.forEach(function (song) {
-    if (chordCountsInLabels.get(song.label) === undefined) {
-      chordCountsInLabels.set(song.label, {});
+  classifier.songs.forEach(function (song) {
+    if (classifier.chordCountsInLabels.get(song.label) === undefined) {
+      classifier.chordCountsInLabels.set(song.label, {});
     }
 
     song.chords.forEach(function (chord) {
-      if (chordCountsInLabels.get(song.label)[chord] > 0) {
-        chordCountsInLabels.get(song.label)[chord] += 1;
+      if (classifier.chordCountsInLabels.get(song.label)[chord] > 0) {
+        classifier.chordCountsInLabels.get(song.label)[chord] += 1;
       } else {
-        chordCountsInLabels.get(song.label)[chord] = 1;
+        classifier.chordCountsInLabels.get(song.label)[chord] = 1;
       }
     });
   });
 }
 
 function setProbabilityOfChordsInLabels() {
-  probabilityOfChordsInLabels = chordCountsInLabels;
+  classifier.probabilityOfChordsInLabels = classifier.chordCountsInLabels;
 
-  probabilityOfChordsInLabels.forEach(function (_chords, difficulty) {
-    Object.keys(probabilityOfChordsInLabels.get(difficulty)).forEach(function (chord) {
-      probabilityOfChordsInLabels.get(difficulty)[chord] /= songs.length;
+  classifier.probabilityOfChordsInLabels.forEach(function (_chords, difficulty) {
+    Object.keys(classifier.probabilityOfChordsInLabels.get(difficulty)).forEach(function (chord) {
+      classifier.probabilityOfChordsInLabels.get(difficulty)[chord] /= classifier.songs.length;
     });
   });
 }
 
-train(imagine, easy);
-train(someWhereOverTheRainbow, easy);
-train(tooManyCooks, easy);
+function trainAll() {
+  setDifficulites();
+  setSongs();
 
-train(iWillFollowYouIntoTheDark, medium);
-train(babyOneMoreTime, medium);
-train(creep, medium);
+  train(imagine, easy);
+  train(someWhereOverTheRainbow, easy);
+  train(tooManyCooks, easy);
 
-train(paperBag, hard);
-train(toxic, hard);
-train(bulletproof, hard);
+  train(iWillFollowYouIntoTheDark, medium);
+  train(babyOneMoreTime, medium);
+  train(creep, medium);
 
-setLabelProbabilities();
-setChrodCountsInLabels();
-setProbabilityOfChordsInLabels();
+  train(paperBag, hard);
+  train(toxic, hard);
+  train(bulletproof, hard);
+
+  setLabelsAndProbabilities();
+}
+
+function setLabelsAndProbabilities() {
+  setLabelProbabilities();
+  setChrodCountsInLabels();
+  setProbabilityOfChordsInLabels();
+}
 
 function classify(chords) {
   var something = 1.01;
   var classififed = new Map();
 
-  labelProbabilities.forEach(function (_probabilities, difficulty) {
-    var first = labelProbabilities.get(difficulty) + something;
+  classifier.labelProbabilities.forEach(function (_probabilities, difficulty) {
+    var first = classifier.labelProbabilities.get(difficulty) + something;
     chords.forEach(function (chord) {
-      var probabilityOfChordInLabel = probabilityOfChordsInLabels.get(difficulty)[chord];
+      var probabilityOfChordInLabel = classifier.probabilityOfChordsInLabels.get(difficulty)[chord];
       if (probabilityOfChordInLabel !== undefined) {
         first *= probabilityOfChordInLabel + something;
       }
@@ -112,12 +125,10 @@ function classify(chords) {
   return classififed;
 }
 
-classify(["d", "g", "e", "dm"]);
-classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
-
 var wish = require("wish");
 
 describe("the file", () => {
+  trainAll();
   it("works", () => {
     wish(true);
   });
@@ -134,8 +145,8 @@ describe("the file", () => {
   });
 
   it("label probabilities", () => {
-    wish(labelProbabilities.get("easy") === 0.3333333333333333);
-    wish(labelProbabilities.get("medium") === 0.3333333333333333);
-    wish(labelProbabilities.get("hard") === 0.3333333333333333);
+    wish(classifier.labelProbabilities.get("easy") === 0.3333333333333333);
+    wish(classifier.labelProbabilities.get("medium") === 0.3333333333333333);
+    wish(classifier.labelProbabilities.get("hard") === 0.3333333333333333);
   });
 });
