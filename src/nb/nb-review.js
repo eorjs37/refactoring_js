@@ -92,14 +92,21 @@ function classify(chords) {
   const classififed = new Map();
 
   classifier.labelProbabilities.forEach(function (_probabilities, difficulty) {
-    let first = classifier.labelProbabilities.get(difficulty) + something;
+    const likelihoods = [classifier.labelProbabilities.get(difficulty) + something];
+
     chords.forEach(function (chord) {
       const probabilityOfChordInLabel = classifier.probabilityOfChordsInLabels.get(difficulty)[chord];
-      if (probabilityOfChordInLabel !== undefined) {
-        first *= probabilityOfChordInLabel + something;
+
+      if (probabilityOfChordInLabel) {
+        likelihoods.push(probabilityOfChordInLabel + something);
       }
     });
-    classififed.set(difficulty, first);
+
+    const totalLikehood = likelihoods.reduce(function (total, index) {
+      return total * index;
+    });
+
+    classififed.set(difficulty, totalLikehood);
   });
 
   return classififed;
