@@ -14,23 +14,23 @@ const classifier = {
   labelProbabilities: new Map(),
   chordCountsInLabels: new Map(),
   probabilityOfChordsInLabels: new Map(),
+  something: 1.01,
   classify: function (chords) {
-    const something = 1.01;
     const classififed = new Map();
 
-    classifier.labelProbabilities.forEach(function (_probabilities, difficulty) {
+    Array.from(this.labelProbabilities.entries()).map((labelWithProbability) => {
       //축소시작
-      const totalLikehood = chords.reduce(function (total, chord) {
-        const probabilityOfChordLabel = classifier.probabilityOfChordsInLabels.get(difficulty)[chord];
+      const totalLikehood = chords.reduce((total, chord) => {
+        const probabilityOfChordLabel = this.probabilityOfChordsInLabels.get(labelWithProbability[0])[chord];
         if (probabilityOfChordLabel) {
-          return total * (probabilityOfChordLabel + something);
+          return total * (probabilityOfChordLabel + this.something);
         } else {
           return total;
         }
-      }, classifier.labelProbabilities.get(difficulty) + something);
+      }, this.labelProbabilities.get(labelWithProbability[0]) + this.something);
       //축소 끝
 
-      classififed.set(difficulty, totalLikehood);
+      classififed.set(labelWithProbability[0], totalLikehood);
     });
 
     return classififed;
