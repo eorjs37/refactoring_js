@@ -14,6 +14,27 @@ const classifier = {
   labelProbabilities: new Map(),
   chordCountsInLabels: new Map(),
   probabilityOfChordsInLabels: new Map(),
+  classify: function (chords) {
+    const something = 1.01;
+    const classififed = new Map();
+
+    classifier.labelProbabilities.forEach(function (_probabilities, difficulty) {
+      //축소시작
+      const totalLikehood = chords.reduce(function (total, chord) {
+        const probabilityOfChordLabel = classifier.probabilityOfChordsInLabels.get(difficulty)[chord];
+        if (probabilityOfChordLabel) {
+          return total * (probabilityOfChordLabel + something);
+        } else {
+          return total;
+        }
+      }, classifier.labelProbabilities.get(difficulty) + something);
+      //축소 끝
+
+      classififed.set(difficulty, totalLikehood);
+    });
+
+    return classififed;
+  },
 };
 
 const songList = {
@@ -87,31 +108,6 @@ function setLabelsAndProbabilities() {
   setProbabilityOfChordsInLabels();
 }
 
-function classify(chords) {
-  const something = 1.01;
-  const classififed = new Map();
-
-  classifier.labelProbabilities.forEach(function (_probabilities, difficulty) {
-    const likelihoods = [classifier.labelProbabilities.get(difficulty) + something];
-
-    chords.forEach(function (chord) {
-      const probabilityOfChordInLabel = classifier.probabilityOfChordsInLabels.get(difficulty)[chord];
-
-      if (probabilityOfChordInLabel) {
-        likelihoods.push(probabilityOfChordInLabel + something);
-      }
-    });
-
-    const totalLikehood = likelihoods.reduce(function (total, index) {
-      return total * index;
-    });
-
-    classififed.set(difficulty, totalLikehood);
-  });
-
-  return classififed;
-}
-
 const wish = require("wish");
 
 describe("the file", () => {
@@ -133,7 +129,7 @@ describe("the file", () => {
   });
 
   it("classifies", () => {
-    const classified = classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
+    const classified = classifier.classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
     wish(classified.get("easy") === 1.3433333333333333);
     wish(classified.get("medium") === 1.5060259259259259);
     wish(classified.get("hard") === 1.8929091119661638);
