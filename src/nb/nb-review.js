@@ -15,25 +15,28 @@ const classifier = {
   chordCountsInLabels: new Map(),
   probabilityOfChordsInLabels: new Map(),
   something: 1.01,
+  valueForChorDifficulty(difficulty, chord) {
+    const value = this.probabilityOfChordsInLabels.get(difficulty)[chord];
+
+    return value ? value + this.something : 1;
+  },
   classify: function (chords) {
-    const classififed = new Map();
+    return new Map(
+      Array.from(this.labelProbabilities.entries()).map((labelWithProbability) => {
+        const difficulty = labelWithProbability[0];
 
-    Array.from(this.labelProbabilities.entries()).map((labelWithProbability) => {
-      //축소시작
-      const totalLikehood = chords.reduce((total, chord) => {
-        const probabilityOfChordLabel = this.probabilityOfChordsInLabels.get(labelWithProbability[0])[chord];
-        if (probabilityOfChordLabel) {
-          return total * (probabilityOfChordLabel + this.something);
-        } else {
-          return total;
-        }
-      }, this.labelProbabilities.get(labelWithProbability[0]) + this.something);
-      //축소 끝
-
-      classififed.set(labelWithProbability[0], totalLikehood);
-    });
-
-    return classififed;
+        return [
+          difficulty,
+          chords.reduce((total, chord) => {
+            if (this.probabilityOfChordsInLabels.get(difficulty)[chord]) {
+              return total * this.valueForChorDifficulty(difficulty, chord);
+            } else {
+              return total;
+            }
+          }, this.labelProbabilities.get(difficulty) + this.something),
+        ];
+      })
+    );
   },
 };
 
