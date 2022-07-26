@@ -13,10 +13,37 @@ const classifier = {
   labelCounts: new Map(),
   labelProbabilities: new Map(),
   chordCountsInLabels: new Map(),
-  probabilityOfChordsInLabels: new Map(),
   something: 1.01,
+
+  setProbabilityOfChordsInLabels: function () {
+    this.chordCountsInLabels = this.chordCountsInLabels;
+    this.chordCountsInLabels.forEach(function (_chords, difficulty) {
+      Object.keys(this.chordCountsInLabels.get(difficulty)).forEach(function (chord) {
+        this.chordCountsInLabels.get(difficulty)[chord] /= this.songs.length;
+      }, this);
+    }, this);
+  },
+
+  chordCountForDifficulty: function (difficulty, testChord) {
+    let counter = 0;
+    songList.songs.forEach(function (song) {
+      if (song.difficulty === difficulty) {
+        song.chords.forEach(function (chord) {
+          if (chord === testChord) {
+            counter = counter + 1;
+          }
+        });
+      }
+    });
+    return counter;
+  },
+
+  likelihoodFromChord: function (difficulty, chord) {
+    return this.chordCountForDifficulty(difficulty, chord) / songList.songs.length;
+  },
+
   valueForChorDifficulty(difficulty, chord) {
-    const value = this.probabilityOfChordsInLabels.get(difficulty)[chord];
+    const value = this.likelihoodFromChord(difficulty, chord);
 
     return value ? value + this.something : 1;
   },
@@ -28,7 +55,7 @@ const classifier = {
         return [
           difficulty,
           chords.reduce((total, chord) => {
-            if (this.probabilityOfChordsInLabels.get(difficulty)[chord]) {
+            if (this.chordCountsInLabels.get(difficulty)[chord]) {
               return total * this.valueForChorDifficulty(difficulty, chord);
             } else {
               return total;
@@ -37,6 +64,22 @@ const classifier = {
         ];
       })
     );
+  },
+
+  setChrodCountsInLabels: function () {
+    songList.songs.forEach(function (song) {
+      if (this.chordCountsInLabels.get(song.difficulty) === undefined) {
+        this.chordCountsInLabels.set(song.difficulty, {});
+      }
+
+      song.chords.forEach(function (chord) {
+        if (this.chordCountsInLabels.get(song.difficulty)[chord] > 0) {
+          this.chordCountsInLabels.get(song.difficulty)[chord] += 1;
+        } else {
+          this.chordCountsInLabels.get(song.difficulty)[chord] = 1;
+        }
+      }, this);
+    }, this);
   },
 };
 
@@ -53,10 +96,6 @@ const songList = {
 };
 
 function train(chords, label) {
-  const labels = [];
-  classifier.songs.push({ label, chords });
-  labels.push(label);
-
   chords.forEach((chord) => classifier.allChords.add(chord));
 
   if (Array.from(classifier.labelCounts.keys()).includes(label)) {
@@ -68,32 +107,7 @@ function train(chords, label) {
 
 function setLabelProbabilities() {
   classifier.labelCounts.forEach(function (_count, label) {
-    classifier.labelProbabilities.set(label, classifier.labelCounts.get(label) / classifier.songs.length);
-  });
-}
-function setChrodCountsInLabels() {
-  classifier.songs.forEach(function (song) {
-    if (classifier.chordCountsInLabels.get(song.label) === undefined) {
-      classifier.chordCountsInLabels.set(song.label, {});
-    }
-
-    song.chords.forEach(function (chord) {
-      if (classifier.chordCountsInLabels.get(song.label)[chord] > 0) {
-        classifier.chordCountsInLabels.get(song.label)[chord] += 1;
-      } else {
-        classifier.chordCountsInLabels.get(song.label)[chord] = 1;
-      }
-    });
-  });
-}
-
-function setProbabilityOfChordsInLabels() {
-  classifier.probabilityOfChordsInLabels = classifier.chordCountsInLabels;
-
-  classifier.probabilityOfChordsInLabels.forEach(function (_chords, difficulty) {
-    Object.keys(classifier.probabilityOfChordsInLabels.get(difficulty)).forEach(function (chord) {
-      classifier.probabilityOfChordsInLabels.get(difficulty)[chord] /= classifier.songs.length;
-    });
+    classifier.labelProbabilities.set(label, classifier.labelCounts.get(label) / songList.songs.length);
   });
 }
 
@@ -107,8 +121,7 @@ function trainAll() {
 
 function setLabelsAndProbabilities() {
   setLabelProbabilities();
-  setChrodCountsInLabels();
-  setProbabilityOfChordsInLabels();
+  //classifier.setChrodCountsInLabels();
 }
 
 const wish = require("wish");
