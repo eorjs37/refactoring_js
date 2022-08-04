@@ -51,6 +51,7 @@ wish(japanseWord instanceof Word);
 wish(!(JapaenseWord instanceof Word));
 
 wish(japanseWord.constructor === JapaenseWord);
+console.log(Object.getPrototypeOf(JapaenseWord));
 wish(Object.getPrototypeOf(JapaenseWord) === Word);
 
 //약간 개략적인 테스트
