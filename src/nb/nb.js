@@ -54,6 +54,24 @@ function setChordCountsInLabels() {
       chordCountsInLabels[i[0]] = {};
     }
 
-    i[1].forEach(function (j) {});
+    i[1].forEach(function (j) {
+      if (chordCountsInLabels[i[0]][j] > 0) {
+        chordCountsInLabels[i[0]][j] = chordCountsInLabels[i[0]][j] + 1;
+      } else {
+        chordCountsInLabels[i[0]][j] = 1;
+      }
+    });
   });
 }
+
+function setProbabilityOfChordsInLabels() {
+  probabilityOfChordsInLabels = chordCountsInLabels;
+
+  Object.keys(probabilityOfChordsInLabels).forEach(function (i) {
+    Object.keys(probabilityOfChordsInLabels[i]).forEach(function (j) {
+      probabilityOfChordsInLabels[i][j] = (probabilityOfChordsInLabels[i][j] * 1.0) / songs.length;
+    });
+  });
+}
+
+train(imagine, "easy");
