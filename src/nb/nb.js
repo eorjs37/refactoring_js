@@ -4,6 +4,13 @@ var easy = "easy";
 var medium = "medium";
 var hard = "hard";
 
+function fileName() {
+  var theError = new Error("Here I am");
+  return theError.stack.split("\n")[1].split("/").pop().split(":")[0];
+}
+
+console.log(`Welcome to ${fileName()}`);
+
 //노래 관련 코드들
 imagine = ["c", "cmaj7", "f", "am", "dm", "g", "e7"];
 someWhereOverTheRainbow = ["c", "em", "f", "g", "am"];
@@ -26,12 +33,13 @@ var chordCountsInLabels = {};
 var probabilityOfChordsInLabels = {};
 
 function train(chords, label) {
+  var index;
   songs.push([label, chords]);
   labels.push(label);
 
-  for (var i = 0; i < chords.length; i++) {
-    if (!allChords.includes(chords[i])) {
-      allChords.push(chords[i]);
+  for (index = 0; index < chords.length; index++) {
+    if (!allChords.includes(chords[index])) {
+      allChords.push(chords[index]);
     }
   }
 
@@ -42,14 +50,9 @@ function train(chords, label) {
   }
 }
 
-function getNumberOfSongs() {
-  return songs.length;
-}
-
 function setLabelProbabilities() {
   Object.keys(labelCounts).forEach(function (label) {
-    var numberOfSongs = getNumberOfSongs();
-    labelProbabilities[label] = labelCounts[label] / numberOfSongs;
+    labelProbabilities[label] = labelCounts[label] / songs.length;
   });
 }
 
