@@ -26,7 +26,7 @@ bulletproof = ["d#m", "g#", "b", "f#", "g#m", "c#"];
 
 var songs = [];
 var labels = [];
-var allChords = [];
+var allChords = new Set();
 var labelCounts = [];
 var labelProbabilities = [];
 var chordCountsInLabels = {};
@@ -37,9 +37,7 @@ function train(chords, label) {
   labels.push(label);
 
   chords.forEach((chord) => {
-    if (!allChords.includes(chord)) {
-      allChords.push(chord);
-    }
+    allChords.add(chord);
   });
 
   if (Object.keys(labelCounts).includes(label)) {
