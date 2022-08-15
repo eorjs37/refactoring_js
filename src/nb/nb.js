@@ -1,15 +1,15 @@
 fs = require("fs");
 
-var easy = "easy";
-var medium = "medium";
-var hard = "hard";
-
 function fileName() {
   var theError = new Error("Here I am");
   return theError.stack.split("\n")[1].split("/").pop().split(":")[0];
 }
 
 console.log(`Welcome to ${fileName()}`);
+
+var easy = "easy";
+var medium = "medium";
+var hard = "hard";
 
 //노래 관련 코드들
 imagine = ["c", "cmaj7", "f", "am", "dm", "g", "e7"];
@@ -20,7 +20,7 @@ iWillFollowYouIntoTheDark = ["f", "dm", "bb", "c", "a", "bbm"];
 babyOneMoreTime = ["cm", "g", "bb", "eb", "eb", "fm", "ab"];
 creep = ["g", "gsus4", "b", "bsus4", "c", "cmsus4", "cm6"];
 
-pagerBag = ["bm7", "e", "c", "g", "b7", "f", "em", "A", "cmaj7", "em7", "a7", "f7", "b"];
+paperBag = ["bm7", "e", "c", "g", "b7", "f", "em", "A", "cmaj7", "em7", "a7", "f7", "b"];
 toxic = ["cm", "eb", "g", "cdim", "eb7", "d7", "db7", "ab", "gmaj7", "g7"];
 bulletproof = ["d#m", "g#", "b", "f#", "g#m", "c#"];
 
@@ -33,15 +33,14 @@ var chordCountsInLabels = {};
 var probabilityOfChordsInLabels = {};
 
 function train(chords, label) {
-  var index;
   songs.push([label, chords]);
   labels.push(label);
 
-  for (index = 0; index < chords.length; index++) {
-    if (!allChords.includes(chords[index])) {
-      allChords.push(chords[index]);
+  chords.forEach((chord) => {
+    if (!allChords.includes(chord)) {
+      allChords.push(chord);
     }
-  }
+  });
 
   if (Object.keys(labelCounts).includes(label)) {
     labelCounts[label] = labelCounts[label] + 1;
@@ -90,7 +89,7 @@ train(iWillFollowYouIntoTheDark, medium);
 train(babyOneMoreTime, medium);
 train(creep, medium);
 
-train(pagerBag, hard);
+train(paperBag, hard);
 train(toxic, hard);
 train(bulletproof, hard);
 
