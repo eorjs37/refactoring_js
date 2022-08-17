@@ -8,4 +8,5 @@
 ## Map
 
 > Set과 차이점은 key:value 형태로 관리를 할 수 있으며, 중복체크는 하지 않는다.  
-> 다만 map기능이 존재 하지 않는다.
+> 다만 map기능이 존재 하지 않는다.  
+> Map에서 forEach를 사용할 때에는 익명함수에 (key,value)가 아닌 (value,key)가 나온다.
