@@ -1,12 +1,5 @@
 fs = require("fs");
 
-function fileName() {
-  var theError = new Error("Here I am");
-  return theError.stack.split("\n")[1].split("/").pop().split(":")[0];
-}
-
-console.log(`Welcome to ${fileName()}`);
-
 var easy = "easy";
 var medium = "medium";
 var hard = "hard";
@@ -80,28 +73,34 @@ function setProbabilityOfChordsInLabels() {
   });
 }
 
-train(imagine, easy);
-train(someWhereOverTheRainbow, easy);
-train(tooManyCooks, easy);
+function trainAll() {
+  train(imagine, easy);
+  train(someWhereOverTheRainbow, easy);
+  train(tooManyCooks, easy);
 
-train(iWillFollowYouIntoTheDark, medium);
-train(babyOneMoreTime, medium);
-train(creep, medium);
+  train(iWillFollowYouIntoTheDark, medium);
+  train(babyOneMoreTime, medium);
+  train(creep, medium);
 
-train(paperBag, hard);
-train(toxic, hard);
-train(bulletproof, hard);
+  train(paperBag, hard);
+  train(toxic, hard);
+  train(bulletproof, hard);
 
-setLabelProbabilities();
-setChordCountsInLabels();
-setProbabilityOfChordsInLabels();
+  setLabelsAndProbabilites();
+}
+
+function setLabelsAndProbabilites() {
+  setLabelProbabilities();
+  setChordCountsInLabels();
+  setProbabilityOfChordsInLabels();
+}
 
 function classify(chords) {
   var smoothing = 1.01;
+  console.log(labelProbabilities);
   var classified = new Map();
-
   labelProbabilities.forEach(function (_probabilites, difficutly) {
-    var first = labelProbabilities.get(difficutly);
+    var first = labelProbabilities.get(difficutly) + smoothing;
 
     chords.forEach(function (chord) {
       var probabilityOfChordInLabel = probabilityOfChordsInLabels.get(difficutly)[chord];
@@ -112,7 +111,28 @@ function classify(chords) {
     });
     classified.set(difficutly, first);
   });
+
+  console.log(classified);
+
+  return classified;
 }
 
 classify(["d", "g", "e", "em"]);
-classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
+
+var wish = require("wish");
+
+describe("the file", () => {
+  trainAll();
+  it("classifies", () => {
+    var classifed = classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
+    wish(classifed.get("easy") === 1.3433333333333333);
+    wish(classifed.get("medium") === 1.5060259259259259);
+    wish(classifed.get("hard") === 1.5060259259259259);
+  });
+
+  it("label probabilites", () => {
+    wish(labelProbabilities.get("easy") === 0.3333333333333333);
+    wish(labelProbabilities.get("medium") === 0.3333333333333333);
+    wish(labelProbabilities.get("hard") === 0.3333333333333333);
+  });
+});
