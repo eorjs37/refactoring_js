@@ -102,6 +102,8 @@ function classify(chords) {
   const classified = new Map();
 
   classifier.labelProbabilities.forEach(function (_probabilites, difficutly) {
+    const likelihoods = [classifier.labelProbabilities.get(difficutly) + smoothing];
+
     //축소 시작
     const totalLikehood = chords.reduce(function (total, chord) {
       const probabilityOfChordInLabel = classifier.probabilityOfChordsInLabels.get(difficutly)[chord];
@@ -112,7 +114,7 @@ function classify(chords) {
         return total;
       }
     }, classifier.labelProbabilities.get(difficutly) + smoothing);
-
+    //축소 끝
     classified.set(difficutly, totalLikehood);
   });
 
