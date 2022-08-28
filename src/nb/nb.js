@@ -7,6 +7,27 @@ const classifier = {
   labelProbabilities: new Map(),
   chordCountsInLabels: new Map(),
   probabilityOfChordsInLabels: new Map(),
+  classify: function (chords) {
+    const smoothing = 1.01;
+    const classified = new Map();
+
+    classifier.labelProbabilities.forEach(function (_probabilites, difficutly) {
+      //축소 시작
+      const totalLikehood = chords.reduce(function (total, chord) {
+        const probabilityOfChordInLabel = classifier.probabilityOfChordsInLabels.get(difficutly)[chord];
+
+        if (probabilityOfChordInLabel) {
+          return total * (probabilityOfChordInLabel + smoothing);
+        } else {
+          return total;
+        }
+      }, classifier.labelProbabilities.get(difficutly) + smoothing);
+      //축소 끝
+      classified.set(difficutly, totalLikehood);
+    });
+
+    return classified;
+  },
 };
 
 const songList = {
@@ -97,44 +118,20 @@ function setLabelsAndProbabilites() {
   setProbabilityOfChordsInLabels();
 }
 
-function classify(chords) {
-  const smoothing = 1.01;
-  const classified = new Map();
-
-  classifier.labelProbabilities.forEach(function (_probabilites, difficutly) {
-    const likelihoods = [classifier.labelProbabilities.get(difficutly) + smoothing];
-
-    //축소 시작
-    const totalLikehood = chords.reduce(function (total, chord) {
-      const probabilityOfChordInLabel = classifier.probabilityOfChordsInLabels.get(difficutly)[chord];
-
-      if (probabilityOfChordInLabel) {
-        return total * (probabilityOfChordInLabel + smoothing);
-      } else {
-        return total;
-      }
-    }, classifier.labelProbabilities.get(difficutly) + smoothing);
-    //축소 끝
-    classified.set(difficutly, totalLikehood);
-  });
-
-  return classified;
-}
-
 const wish = require("wish");
 
 describe("the file", () => {
   setSongs();
   trainAll();
   it("classifies", () => {
-    const classifed = classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
+    const classifed = classifier.classify(["f#m7", "a", "dadd9", "dmaj7", "bm", "bm7", "d", "f#m"]);
     wish(classifed.get("easy") === 1.3433333333333333);
     wish(classifed.get("medium") === 1.5060259259259259);
     wish(classifed.get("hard") === 1.6884223991769547);
   });
 
   it("clssifies again", () => {
-    const classifed = classify(["d", "g", "e", "em"]);
+    const classifed = classifier.classify(["d", "g", "e", "em"]);
     wish(classifed.get("easy") === 2.023094827160494);
     wish(classifed.get("medium") === 1.6552851851851849);
     wish(classifed.get("hard") === 2.080511600763603);
