@@ -7,30 +7,25 @@ const classifier = {
   labelProbabilities: new Map(),
   chordCountsInLabels: new Map(),
   probabilityOfChordsInLabels: new Map(),
+  smoothing: 1.01,
   classify: function (chords) {
-    const smoothing = 1.01;
-    const classified = new Map();
-    const self = this;
+    return new Map(
+      Array.from(this.labelProbabilities.entries()).map((labelWithProbability) => {
+        const difficulty = labelWithProbability[0];
 
-    this.labelProbabilities.forEach(function (_probabilites, difficutly) {
-      //축소 시작
-      const totalLikehood = chords.reduce(
-        function (total, chord) {
-          const probabilityOfChordInLabel = this.probabilityOfChordsInLabels.get(difficutly)[chord];
+        return [
+          difficulty,
+          chords.reduce((total, chord) => {
+            return total * this.valueForChordDifficulty(difficulty, chord);
+          }, this.labelProbabilities.get(difficulty) + this.smoothing),
+        ];
+      })
+    );
+  },
+  valueForChordDifficulty(difficulty, chord) {
+    const value = this.probabilityOfChordsInLabels.get(difficulty)[chord];
 
-          if (probabilityOfChordInLabel) {
-            return total * (probabilityOfChordInLabel + smoothing);
-          } else {
-            return total;
-          }
-        }.bind(this),
-        this.labelProbabilities.get(difficutly) + smoothing
-      );
-      //축소 끝
-      classified.set(difficutly, totalLikehood);
-    }, this);
-
-    return classified;
+    return value ? value + this.smoothing : 1;
   },
 };
 
