@@ -49,9 +49,7 @@ const classifier = {
   chordCountForDifficulty: function (difficulty, testChord) {
     return songList.songs.reduce(function (counter, song) {
       if (song.difficulty === difficulty) {
-        counter += song.chords.filter(function (chord) {
-          return chord === testChord;
-        }).length;
+        counter += song.chords.filter((chord) => chord === testChord).length;
       }
 
       return counter;
@@ -111,17 +109,6 @@ function setSongs() {
   songList.addSong("toxic", ["cm", "eb", "g", "cdim", "eb7", "d7", "db7", "ab", "gmaj7", "g7"], 2);
   songList.addSong("bulletproof", ["d#m", "g#", "b", "f#", "g#m", "c#"], 2);
 }
-// function train(chords, label) {
-//   chords.forEach((chord) => {
-//     classifier.allChords.add(chord);
-//   });
-
-//   if (Array.from(classifier.labelCounts.keys()).includes(label)) {
-//     classifier.labelCounts.set(label, classifier.labelCounts.get(label) + 1);
-//   } else {
-//     classifier.labelCounts.set(label, 1);
-//   }
-// }
 
 const wish = require("wish");
 
