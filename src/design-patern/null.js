@@ -1,19 +1,25 @@
 class Person {
   constructor(name) {
-    this.name = name;
+    this.name = new NameString(name);
   }
 }
 
 class AnoymousPerson extends Person {
   constructor() {
     super();
-    this.name = null;
+    this.name = new NullString();
   }
 }
 
 class NullString {
   capitalize() {
-    return null;
+    return this;
+  }
+  tigerify() {
+    return this;
+  }
+  display() {
+    return "";
   }
 }
 
@@ -37,8 +43,8 @@ class NameString extends String {
   }
 }
 
-personOne = new Person("tony");
-personTwo = new AnoymousPerson("tony");
+const personOne = new Person("tony");
+const personTwo = new AnoymousPerson("tony");
 
-console.log(personOne.name.c);
-console.log();
+console.log(personOne.name.capitalize().tigerify().display());
+console.log(personTwo.name.capitalize().tigerify().display());
