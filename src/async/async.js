@@ -1,17 +1,35 @@
 const http = require("http");
-let bodyArray = [];
 
-const saveBody = function (chunk) {
-  bodyArray.push(chunk);
+const getBody = {
+  bodyArray: [],
+  saveBody: function (chunk) {
+    this.bodyArray.push(chunk);
+  },
+  printBody: function () {
+    console.log(this.bodyArray.join(""));
+    this.allDone();
+  },
+  getResults: function (result) {
+    result.on("data", this.saveBody.bind(this));
+    result.on("end", this.printBody.bind(this));
+  },
+  allDone: function () {},
 };
 
-const printBody = function () {
-  console.log(bodyArray.join(""));
-};
+//http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
 
-const getResults = function (result) {
-  result.on("data", saveBody);
-  result.on("end", printBody);
-};
+const test = require("tape");
 
-http.get("http://www.navercloudcorp.com/", getResults);
+test("out async routine", function (assert) {
+  getBody.allDone = function () {
+    assert.notEqual(getBody.bodyArray.length, 0);
+    assert.end();
+  };
+
+  http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
+});
+
+// test("our async routine two", function (assert) {
+//   getBody.bodyArray = [];
+//   getBody.allDone = function () {};
+// });
