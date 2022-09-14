@@ -29,7 +29,10 @@ test("out async routine", function (assert) {
   http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
 });
 
-// test("our async routine two", function (assert) {
-//   getBody.bodyArray = [];
-//   getBody.allDone = function () {};
-// });
+test("our async routine two", function (assert) {
+  getBody.bodyArray = [];
+  getBody.allDone = function () {};
+  http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
+  assert.equal(getBody.bodyArray.length, 0);
+  assert.end();
+});
