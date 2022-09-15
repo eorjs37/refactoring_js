@@ -1,5 +1,7 @@
 const http = require("http");
 
+const testDouble = require("testdouble");
+
 const getBody = {
   bodyArray: [],
   saveBody: function (chunk) {
@@ -16,23 +18,34 @@ const getBody = {
   allDone: function () {},
 };
 
-//http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
+function setup() {
+  return Object.create(getBody);
+}
+
+function teardown() {
+  getBody.allDone = function () {};
+}
 
 const test = require("tape");
 
 test("out async routine", function (assert) {
-  getBody.allDone = function () {
-    assert.notEqual(getBody.bodyArray.length, 0);
-    assert.end();
-  };
+  const newBody = setup();
+  newBody.allDone = testDouble.function();
 
-  http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
+  testDouble.when(newBody.allDone()).thenDo(function () {
+    assert.notEqual(newBody.bodyArray.length, 0);
+    assert.end();
+  });
+
+  http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(newBody));
 });
 
 test("our async routine two", function (assert) {
+  setup();
   getBody.bodyArray = [];
   getBody.allDone = function () {};
   http.get("http://www.navercloudcorp.com/", getBody.getResults.bind(getBody));
   assert.equal(getBody.bodyArray.length, 0);
+  teardown();
   assert.end();
 });
