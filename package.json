@@ -18,6 +18,7 @@
   "homepage": "https://github.com/eorjs37/refactoring_js#readme",
   "dependencies": {
     "deep-equal": "^2.0.5",
+    "lodash": "^4.17.21",
     "ramda": "^0.28.0",
     "tape": "^5.6.0",
     "testdouble": "^3.16.6",
